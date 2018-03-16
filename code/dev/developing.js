@@ -14,7 +14,7 @@ var Developing = {
     ]},
   ],
   
-  update: function() {
+  update: function(delta) {
     if (Input.mouse.right === 'clicked') {
       this.menu = new Menu(Input.mouse.coordinates, this.menuLayout);
     }
@@ -25,9 +25,10 @@ var Developing = {
     }
     
     if (this.menu !== false) {
-      this.menu.update();
+      this.menu.update(delta);
     }
   },
+
   draw: function(ctx) {
     if (this.menu !== false) {
       this.menu.draw(ctx);

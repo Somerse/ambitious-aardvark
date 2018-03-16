@@ -27,20 +27,10 @@ var Input = {
 
 	onMouseDown: function(event) {
 	  if (event.which === 1) {
-	    if (this.mouse.left === 'up') {
-	      this.mouse.left = 'clicked';
-	    }
-	    else {
-	      this.mouse.left = 'held';
-	    }
+	    this.mouse.left = 'clicked';
 	  }
 	  else if (event.which === 3) {
-	    if (this.mouse.right === 'up') {
-	      this.mouse.right = 'clicked';
-	    }
-	    else {
-	      this.mouse.right = 'held';
-	    }
+	    this.mouse.right = 'clicked';
 	  }
 	},
 
@@ -62,6 +52,14 @@ var Input = {
 	},
 	
 	update: function() {
+	  if (this.mouse.left === 'clicked') {
+	  	this.mouse.left = 'held';
+	  }
+
+	  if (this.mouse.right === 'clicked') {
+	  	this.mouse.right = 'held';
+	  }
+
 	  this.mouse.wheel = 0;
 	}
 };
