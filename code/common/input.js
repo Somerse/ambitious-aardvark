@@ -26,6 +26,8 @@ var Input = {
   },
 
 	onMouseDown: function(event) {
+	  this.mouse.coordinates = {x: event.clientX, y: event.clientY};
+
 	  if (event.which === 1) {
 	    this.mouse.left = 'clicked';
 	  }
@@ -35,6 +37,8 @@ var Input = {
 	},
 
 	onMouseUp: function(event) {
+	  this.mouse.coordinates = {x: event.clientX, y: event.clientY};
+	  
 	  if (event.which === 1) {
 	    this.mouse.left = 'up';
 	  }

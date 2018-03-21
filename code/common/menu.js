@@ -4,7 +4,6 @@ function RingSegment(name, center, inside, length, width, index){
   this.length = length;
   this.width = width;
   this.index = index;
-
   this.start = this.index * this.length;
   this.inside = inside;
   this.rotatedStart = this.start;
@@ -14,17 +13,17 @@ function RingSegment(name, center, inside, length, width, index){
     this.rotatedStart = this.start + rotation;
     this.selected = false;
 
-    if (radialMouse.angle >= this.start && radialMouse.angle < this.start + this.length && 
+    if (radialMouse.angle >= this.rotatedStart && radialMouse.angle < this.rotatedStart + this.length && 
         radialMouse.radius >= this.inside && radialMouse.radius < this.inside + this.width) {
       this.selected = true;
     }
   }
 
   this.draw = function(ctx) {
-    var opacityModifier = 0.8;
+    var opacityModifier = 0.7;
 
     if (this.selected) {
-      opacityModifier = 1;
+      opacityModifier = 0.8;
     }
 
     this.drawBackground(opacityModifier, ctx);
@@ -34,8 +33,8 @@ function RingSegment(name, center, inside, length, width, index){
   this.drawBackground = function(opacityModifier, ctx) {
     ctx.fillStyle='rgba(0, 0, 0,' + 0.8 * opacityModifier + ')';
     ctx.beginPath();
-    ctx.arc(this.center.x, this.center.y, this.start + this.width, this.rotatedStart, this.rotatedStart + this.length, false);
-    ctx.arc(this.center.x, this.center.y, this.inside * 1.05, this.rotatedStart + this.length, this.rotatedStart, true);
+    ctx.arc(this.center.x, this.center.y, this.inside + this.width, this.rotatedStart, this.rotatedStart + this.length, false);
+    ctx.arc(this.center.x, this.center.y, this.inside + this.width * 0.05, this.rotatedStart + this.length, this.rotatedStart, true);
     ctx.fill(); 
   }
 
@@ -76,6 +75,7 @@ function Ring(center, width, index, elements) {
   this.width = width;
   this.index = index;
 
+  this.segmentLength = (Math.PI * 2) / elements.length;
   this.inside = this.width * (this.index + 1);
   this.rotation = Math.PI / (elements.length / 2);
   this.inertia = 0;
@@ -85,20 +85,26 @@ function Ring(center, width, index, elements) {
     this.ringSegments.push(
       new RingSegment(
         elements[i].name,
-        center,
+        this.center,
         this.width * (this.index + 1),
-        width, 
-        (Math.PI * 2) / elements.length, 
+        this.segmentLength,
+        this.width,
         i
       )
     );
   }
   
-  this.update = function(radialMouse, delta) {
+  this.update = function(delta) {
+    var coordinates = Input.mouse.coordinates;
+    var radius = Math.sqrt(Math.pow(coordinates.x - this.center.x, 2) + Math.pow(coordinates.y - this.center.y, 2));
+    var angle = this.rotation + (Math.atan2((coordinates.y - this.center.y), (coordinates.x - this.center.x)) + Math.PI * 2 - this.segmentLength) % (Math.PI * 2);
+    
+    var radialMouse = {angle: angle, radius: radius};
+
     this.checkForScroll(0.75, 0.02);
 
     for (i = 0; i < this.ringSegments.length; i++) {
-      this.ringSegments[i].update(delta);
+      this.ringSegments[i].update(radialMouse, this.rotation, delta);
     }
   };
 
@@ -112,7 +118,7 @@ function Ring(center, width, index, elements) {
     //This handles scrolling if the pointer is over this ring
     //*May make this its own function
     if (Input.mouse.wheel !== 0) {
-      this.inertia += (Input.mouse.wheel / 125) * (Math.PI / (this.elements.length / 2));
+      this.inertia += (Input.mouse.wheel / 125) * this.segmentLength;
 
       if (this.inertia > bounds) {
         this.inertia = bounds;
@@ -145,13 +151,7 @@ function Menu(center, elements) {
   this.ring = new Ring(this.center, 75, 0, elements);
   
   this.update = function(delta) {
-    var coordinates = Input.mouse.coordinates;
-    var radius = Math.sqrt(Math.pow(coordinates.x - this.center.x, 2) + Math.pow(coordinates.y - this.center.y, 2));
-    var angle = (Math.atan2((coordinates.y - this.center.y), (coordinates.x - this.center.x)) + Math.PI / this.elements.length) % (Math.PI * 2);
-    
-    var radialMouse = {angle: angle, radius: radius};
-
-    this.ring.update(delta, radialMouse);
+    this.ring.update(delta);
   };
   
   this.draw = function(ctx) {
